@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: db-migration-tool
+
+app:
+  datasource:
+    source:
+      jdbc-url: jdbc:mysql://localhost:3306/source_db
+      username: root
+      password: password
+      driver-class-name: com.mysql.cj.jdbc.Driver
+    target:
+      jdbc-url: jdbc:postgresql://localhost:5432/target_db
+      username: postgres
+      password: password
+      driver-class-name: org.postgresql.Driver
+
+migration:
+  fetch-size: 1000
+  chunk-size: 1000
+  max-retry: 3
