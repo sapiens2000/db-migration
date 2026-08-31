@@ -27,6 +27,18 @@ public class StreamingReader implements AutoCloseable {
         }
     }
 
+    // TODO: 체크포인트 재시작용 오버로드
+    //   - PreparedStatement를 써서 (기존처럼 Statement가 아니라) keyColumn 기준 정렬 +
+    //     필요시 재개 지점 이후만 조회하도록 SQL을 조립한다
+    //   - resumeAfterKey가 null이면: "SELECT * FROM {tableName} ORDER BY {keyColumn}"
+    //   - resumeAfterKey가 null이 아니면: "SELECT * FROM {tableName} WHERE {keyColumn} > ?
+    //     ORDER BY {keyColumn}" 로 만들고 resumeAfterKey를 ?에 바인딩
+    //     (keyColumn 값을 SQL 문자열에 직접 이어붙이지 않도록 주의 - 값은 반드시 바인딩)
+    //   - fetchSize는 기존 생성자처럼 chunkSize로 설정
+    //   - 기존 생성자(this(dataSource, tableName))는 건드리지 않는다 (기존 테스트 보존)
+    public StreamingReader(DataSource dataSource, String tableName, String keyColumn, Long resumeAfterKey, int chunkSize) {
+    }
+
     public StreamingReader(DataSource dataSource, String tableName) {
         // 커서를 생성자에서 미리 열어 필드에 보관해두고, hasNext()/nextChunk() 호출 사이에
         // 계속 살아있게 한다 - 커넥션 하나를 여러 메서드 호출에 걸쳐 유지해야 스트리밍이 되므로

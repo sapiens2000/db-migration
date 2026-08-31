@@ -93,4 +93,38 @@ class StreamingReaderTest {
             assertThat(reader.nextChunk()).isEmpty();
         }
     }
+
+    @Test
+    void resumeAfterKey를_주면_그_키보다_큰_행부터_id_오름차순으로_이어서_읽는다() throws Exception {
+        try (Connection conn = dataSource.getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("INSERT INTO " + TABLE_NAME + " (id, name) VALUES (2, 'bob'), (3, 'carol')");
+        }
+
+        try (StreamingReader reader = new StreamingReader(dataSource, TABLE_NAME, "id", 1L, 10)) {
+            List<Map<String, Object>> chunk = reader.nextChunk();
+
+            assertThat(chunk).hasSize(2);
+            assertThat(chunk.get(0)).containsEntry("id", 2L);
+            assertThat(chunk.get(1)).containsEntry("id", 3L);
+            assertThat(reader.hasNext()).isFalse();
+        }
+    }
+
+    @Test
+    void resumeAfterKey가_null이면_처음부터_id_오름차순으로_전부_읽는다() throws Exception {
+        try (Connection conn = dataSource.getConnection();
+             Statement stmt = conn.createStatement()) {
+            stmt.execute("INSERT INTO " + TABLE_NAME + " (id, name) VALUES (2, 'bob'), (3, 'carol')");
+        }
+
+        try (StreamingReader reader = new StreamingReader(dataSource, TABLE_NAME, "id", null, 10)) {
+            List<Map<String, Object>> chunk = reader.nextChunk();
+
+            assertThat(chunk).hasSize(3);
+            assertThat(chunk.get(0)).containsEntry("id", 1L);
+            assertThat(chunk.get(1)).containsEntry("id", 2L);
+            assertThat(chunk.get(2)).containsEntry("id", 3L);
+        }
+    }
 }
