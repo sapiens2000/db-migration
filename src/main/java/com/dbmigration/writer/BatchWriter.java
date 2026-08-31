@@ -4,45 +4,32 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-
 public class BatchWriter {
 
     public static void writeChunk(Connection connection, String tableName, List<Map<String, Object>> chunk) throws SQLException {
-        // TODO: chunk가 비어있으면 그냥 반환 (할 일 없음)
-        // TODO: 컬럼명은 chunk의 첫 번째 행(Map)의 key 집합에서 가져오기
-        //       - 순서가 뒤섞이면 안 되므로 Map의 key 순서가 보장되는 걸 가정 (LinkedHashMap 등)
-        // TODO: "INSERT INTO {tableName} (col1, col2, ...) VALUES (?, ?, ...)" 형태의 SQL 문자열 조립
-        // TODO: PreparedStatement 생성 후, chunk의 각 행마다:
-        //       - 컬럼 순서대로 row.get(columnName) 값을 setObject(index, value)로 채우고
-        //       - addBatch() 호출
-        // TODO: 반복이 끝나면 executeBatch() 한 번 호출
-        // TODO: 커밋은 여기서 하지 않는다 - 호출자(ChunkProcessor)가 트랜잭션 경계를 제어
-        // TODO: SQLException은 감싸지 않고 그대로 던진다 (RetryPolicy가 원인 판단에 사용)
-
+        // 컬럼 목록을 첫 번째 행의 key 집합에서 뽑는다 - StreamingReader가 LinkedHashMap으로
+        // 채워주므로 순서가 컬럼 순서와 일치한다는 걸 전제로 한다.
+        // 커밋을 호출하지 않는 이유: 청크 하나의 트랜잭션 경계는 ChunkProcessor가 정하므로,
+        // 여기서 임의로 커밋해버리면 재시도/체크포인트 시점과 어긋난다.
+        // SQLException을 감싸지 않고 그대로 던지는 이유: RetryPolicy가 예외 종류(일시적/영구적)를
+        // 보고 재시도 여부를 판단해야 하므로, 여기서 다른 예외로 바꿔버리면 그 정보가 사라진다.
         if(chunk.isEmpty()) return;
         List<String> columnNames = new ArrayList<>(chunk.get(0).keySet());
 
         StringBuilder sb = new StringBuilder("INSERT INTO " + tableName + " (");
-
-        for(int i=0;i<columnNames.size();i++) {
-
-        }
-
-        for(Object columnName : columnNames) {
-            sb.append(columnName).append(",");
-        }
+        sb.append(String.join(", ", columnNames));
         sb.append(") VALUES (");
-
-        for(int i = 0; i < columnNames.size()-1; ++i) {
-            sb.append("?, ");
-        }
-        sb.append("?)");
+        sb.append(String.join(", ", Collections.nCopies(columnNames.size(), "?")));
+        sb.append(')');
 
         try(PreparedStatement pstmt = connection.prepareStatement(sb.toString())) {
             for (Map<String, Object> row : chunk) {
+                for(int i=0;i<columnNames.size();i++) {
+                    pstmt.setObject(i+1, row.get(columnNames.get(i)));
+                }
 
                 pstmt.addBatch();
             }

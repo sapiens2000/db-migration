@@ -45,7 +45,7 @@ common      - 공통 예외, 유틸
 - [x] `JobRepository` — job_status 테이블 설계 및 상태 전이 (CRUD)
 - [x] `StreamingReader` — JDBC `Statement.setFetchSize()` 적용, ResultSet 순회하며 N건씩 List로 반환
   - 미해결: MySQL 드라이버가 양수 fetchSize로 실제 서버 커서 스트리밍을 하는지 확인 필요
-- [ ] `BatchWriter` — JDBC batch insert (`addBatch`/`executeBatch`)
+- [x] `BatchWriter` — JDBC batch insert (`addBatch`/`executeBatch`)
 - [ ] `ChunkProcessor` — reader → writer 오케스트레이션, 청크 단위 트랜잭션 경계 설정
 - [ ] `RetryPolicy` — 예외 타입별 재시도 가능 여부 판단 + 지수 백오프
 - [ ] `CheckpointStore` — 마지막 성공 오프셋 저장/조회, 재시작 시 그 지점부터 재개
