@@ -18,6 +18,8 @@
 
 **목표**: MySQL → PostgreSQL 단방향 마이그레이션을, 대용량에서도 메모리 문제 없이 안정적으로 끝낼 수 있는 최소 기능
 
+**범위 경계**: 이관 시작 시점 기준 스냅샷만 옮긴다. source가 InnoDB(REPEATABLE READ) 기준 커서 스냅샷이라, 마이그레이션 도중 source에 새로 들어오는 INSERT/UPDATE는 이번 이관 대상에서 빠진다 — 이 데이터를 어떻게 따라잡을지는 Phase 2 이후 과제.
+
 핵심 기능 4가지:
 
 1. **스트리밍 읽기** — JDBC `fetchSize` 설정으로 전체 결과를 메모리에 올리지 않고 커서 방식으로 순회
@@ -46,13 +48,14 @@ common      - 공통 예외, 유틸
 - [x] `StreamingReader` — JDBC `Statement.setFetchSize()` 적용, ResultSet 순회하며 N건씩 List로 반환
   - 미해결: MySQL 드라이버가 양수 fetchSize로 실제 서버 커서 스트리밍을 하는지 확인 필요
 - [x] `BatchWriter` — JDBC batch insert (`addBatch`/`executeBatch`)
-- [ ] `ChunkProcessor` — reader → writer 오케스트레이션, 청크 단위 트랜잭션 경계 설정
+- [x] `ChunkProcessor` — reader → writer 오케스트레이션, 청크 단위 트랜잭션 경계 설정
 - [ ] `RetryPolicy` — 예외 타입별 재시도 가능 여부 판단 + 지수 백오프
 - [ ] `CheckpointStore` — 마지막 성공 오프셋 저장/조회, 재시작 시 그 지점부터 재개
 - [ ] 통합 테스트: 중간에 강제로 실패시켰을 때 재시작이 정확히 그 지점부터 이어지는지 검증
 
 ## Phase 2 이후 (MVP 완료 후 재논의)
 
+- 마이그레이션 시작 시각 이후 source에 들어온 데이터(신규 INSERT/UPDATE)를 따라잡는 후속 동기화 (CDC 또는 재실행 방식)
 - 다중 DB 조합을 유연하게 지원 (드라이버 추상화)
 - CSV → DB 이관 확장
 - 직접 구현한 청크/재시도/재시작 로직을 Spring Batch로 전환해보며 비교
