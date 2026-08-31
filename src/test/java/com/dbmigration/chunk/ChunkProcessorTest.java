@@ -1,6 +1,7 @@
 package com.dbmigration.chunk;
 
 import com.dbmigration.reader.StreamingReader;
+import com.dbmigration.retry.RetryPolicy;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.junit.jupiter.api.AfterEach;
@@ -73,7 +74,7 @@ class ChunkProcessorTest {
     @Test
     void 행이_1건인_청크를_처리하면_target에_그_행이_들어가고_true를_반환하며_다음_호출은_false를_반환한다() throws Exception {
         try (StreamingReader reader = new StreamingReader(sourceDataSource, TABLE_NAME, 10)) {
-            ChunkProcessor chunkProcessor = new ChunkProcessor(reader, targetDataSource, TABLE_NAME, 3);
+            ChunkProcessor chunkProcessor = new ChunkProcessor(reader, targetDataSource, TABLE_NAME, new RetryPolicy(3, 1L, 2));
 
             assertThat(chunkProcessor.processNextChunk()).isTrue();
 
@@ -99,7 +100,7 @@ class ChunkProcessorTest {
         }
 
         try (StreamingReader reader = new StreamingReader(sourceDataSource, TABLE_NAME, 10)) {
-            ChunkProcessor chunkProcessor = new ChunkProcessor(reader, targetDataSource, TABLE_NAME, 3);
+            ChunkProcessor chunkProcessor = new ChunkProcessor(reader, targetDataSource, TABLE_NAME, new RetryPolicy(3, 1L, 2));
 
             assertTimeoutPreemptively(Duration.ofSeconds(5), () ->
                     assertThatThrownBy(chunkProcessor::processNextChunk).isInstanceOf(SQLException.class));
