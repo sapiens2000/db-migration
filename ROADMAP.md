@@ -63,6 +63,7 @@ common      - 공통 예외, 유틸
 - 직접 구현한 청크/재시도/재시작 로직을 Spring Batch로 전환해보며 비교
 - 한 테이블 내에서 청크 단위 병렬 처리 (멀티스레딩) 지원
 - CheckpointStore가 저장하는 재개 키 값을 `long` 대신 `Object`/문자열로 범용화 — `VARCHAR` PK 등 BIGINT가 아닌 키 타입 지원
+- `JobStatus`에 CANCELLED 등 상태 추가 — 현재는 RUNNING/FAILED/COMPLETED 3개로 충분 (수동 취소 기능이 아직 없음). 필요해지는 시점에 추가
 
 ## 이미 만들어둔 것
 
