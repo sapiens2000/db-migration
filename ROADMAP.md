@@ -37,6 +37,7 @@ job         - Job 생명주기/상태 관리 (RUNNING, FAILED, COMPLETED)
 reader      - 소스 DB 스트리밍 리더
 writer      - 타겟 DB 배치 라이터
 chunk       - 읽기→쓰기 오케스트레이션 (청크 단위로 묶어서 처리)
+migration   - Job 전체 실행 흐름 오케스트레이션 (체크포인트 조회→재개→청크 반복→상태 갱신)
 retry       - 재시도 정책 (일시적/영구적 오류 판별, 백오프)
 checkpoint  - 진행 상황 저장 및 재시작 지점 조회
 common      - 공통 예외, 유틸

@@ -59,6 +59,10 @@ public class JobRepository {
         return jobId;
     }
 
+    // TODO: markCompleted(UUID jobId) 추가 - markFailed와 대칭되는 메서드.
+    //   status를 JobStatus.COMPLETED로, updated_at을 갱신. error_message는 건드리지 않음.
+    //   (MigrationJob이 정상 종료 시 호출)
+
     public void markFailed(UUID jobId, String errorMessage) {
         String sql = "UPDATE job_status SET status = ?, updated_at = ?, error_message = ? WHERE job_id = ?";
         try (Connection conn = dataSource.getConnection();
