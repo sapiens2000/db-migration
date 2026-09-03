@@ -52,7 +52,7 @@ common      - 공통 예외, 유틸
 - [x] `BatchWriter` — JDBC batch insert (`addBatch`/`executeBatch`)
 - [x] `ChunkProcessor` — reader → writer 오케스트레이션, 청크 단위 트랜잭션 경계 설정
 - [x] `RetryPolicy` — 예외 타입별 재시도 가능 여부 판단 + 지수 백오프
-- [ ] `CheckpointStore` — 마지막 성공 오프셋 저장/조회, 재시작 시 그 지점부터 재개
+- [x] `CheckpointStore` — 마지막 성공 오프셋 저장/조회
 - [ ] 통합 테스트: 중간에 강제로 실패시켰을 때 재시작이 정확히 그 지점부터 이어지는지 검증
 
 ## Phase 2 이후 (MVP 완료 후 재논의)
